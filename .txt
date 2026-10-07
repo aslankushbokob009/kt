@@ -1,0 +1,30 @@
+social-book/
+├─ package.json
+├─ vite.config.js
+├─ index.html
+├─ .gitignore
+├─ README.md
+└─ src/
+   ├─ main.jsx
+   ├─ App.jsx
+   ├─ index.css
+   ├─ app/
+   │   └─ store.js
+   ├─ features/
+   │   └─ posts/
+   │       ├─ postsSlice.js
+   │       └─ postsSelectors.js
+   ├─ components/
+   │   ├─ Header.jsx
+   │   ├─ NewPostForm.jsx
+   │   ├─ PostList.jsx
+   │   ├─ PostCard.jsx
+   │   ├─ CommentList.jsx
+   │   └─ CommentItem.jsx
+   └─ styles/
+       ├─ Header.module.css
+       ├─ NewPostForm.module.css
+       ├─ PostList.module.css
+       ├─ PostCard.module.css
+       ├─ CommentList.module.css
+       └─ CommentItem.module.css

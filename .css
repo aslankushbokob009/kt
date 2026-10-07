@@ -1,0 +1,25 @@
+:root {
+  --bg: #f0f2f5;
+  --card: #ffffff;
+  --border-blue: #a9c9ff;
+  --border-blue-dark: #3d7eff;
+  --primary: #3d7eff;
+  --primary-hover: #2f6cec;
+  --text: #1e2a3a;
+  --text-dim: #7a8aa0;
+  --pink: #ff4d8d;
+  --pink-hover: #ec3a7a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 24px 16px 60px;
+}

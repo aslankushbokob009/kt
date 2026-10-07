@@ -1,0 +1,114 @@
+.card {
+  background: #fff;
+  border: 2px solid var(--border-blue);
+  border-radius: 14px;
+  padding: 18px 20px;
+  transition: border-color .15s;
+}
+.card:hover { border-color: var(--border-blue-dark); }
+
+.text {
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--text);
+  margin-bottom: 16px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1px solid #e6eefc;
+}
+
+.count {
+  margin-left: auto;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+/* -------- общие кнопки -------- */
+.btnPrimary,
+.btnGhost,
+.btnPink {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: 10px;
+  transition: transform .1s, background .15s;
+}
+.btnPrimary:active,
+.btnGhost:active,
+.btnPink:active { transform: scale(.97); }
+
+.btnPrimary {
+  background: var(--primary);
+  color: #fff;
+}
+.btnPrimary:hover { background: var(--primary-hover); }
+
+.btnGhost {
+  background: #eaf1ff;
+  color: #2b5fd9;
+}
+.btnGhost:hover { background: #dbe7ff; }
+
+.btnPink {
+  background: var(--pink);
+  color: #fff;
+}
+.btnPink:hover { background: var(--pink-hover); }
+
+/* -------- режим редактирования -------- */
+.editRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.editInput {
+  flex: 1;
+  min-width: 200px;
+  border: 2px solid var(--border-blue);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 1rem;
+  outline: none;
+  font-family: inherit;
+  color: var(--text);
+}
+.editInput:focus { border-color: var(--primary); }
+
+/* -------- мобильная адаптация -------- */
+@media (max-width: 600px) {
+  .actions {
+    gap: 8px;
+  }
+  .count {
+    margin-left: 0;
+    order: 5;
+    width: 100%;
+    font-size: 0.8rem;
+  }
+  .btnPrimary,
+  .btnGhost,
+  .btnPink {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .btnPrimary,
+  .btnGhost,
+  .btnPink {
+    flex: 1 1 calc(50% - 8px);
+  }
+}
