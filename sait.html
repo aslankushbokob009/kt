@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Social Book</title>
+
+<!-- React, ReactDOM, Redux Toolkit, React-Redux через ESM CDN -->
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.3.1",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+    "@reduxjs/toolkit": "https://esm.sh/@reduxjs/toolkit@2.2.7",
+    "react-redux": "https://esm.sh/react-redux@9.1.2?external=react,react-dom,@reduxjs/toolkit",
+    "nanoid": "https://esm.sh/nanoid@5.0.7"
+  }
+}
+</script>
+
+<!-- Babel для JSX в браузере -->
+<script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
+
+<!-- Стили (соответствуют макету Figma) -->
+<style>
+  :root {
+    --bg: #f0f2f5;
+    --card: #ffffff;
+    --border-blue: #a9c9ff;
+    --border-blue-dark: #3d7eff;
+    --primary: #3d7eff;
+    --primary-hover: #2f6cec;
+    --text: #1e2a3a;
+    --text-dim: #7a8aa0;
+    --pink: #ff4d8d;
+    --pink-hover: #ec3a7a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body, #root { height: 100%; }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px 16px 60px;
+  }
+
+  /* ---------- Общий контейнер ---------- */
+  .app {
+    max-width: 760px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* ---------- Header ---------- */
+  .header {
+    padding: 8px 4px 20px;
+  }
+  .header h1 {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #16223a;
+    letter-spacing: -0.5px;
+  }
+
+  /* ---------- Форма нового поста ---------- */
+  .new-post-form {
+    display: flex;
+    gap: 12px;
+    background: #fff;
+    border: 2px solid var(--border-blue);
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 22px;
+  }
+  .new-post-form input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    color: var(--text);
+    padding: 8px 10px;
+    background: transparent;
+    font-family: inherit;
+  }
+  .new-post-form input::placeholder { color: var(--text-dim); }
+
+  .btn {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 10px 22px;
+    border-radius: 10px;
+    transition: transform .1s, background .15s;
+    white-space: nowrap;
+  }
+  .btn:active { transform: scale(.97); }
+
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(61,126,255,.2);
+  }
+  .btn-primary:hover { background: var(--primary-hover); }
+
+  .btn-ghost {
+    background: #eaf1ff;
+    color: #2b5fd9;
+  }
+  .btn-ghost:hover { background: #dbe7ff; }
+
+  .btn-pink {
+    background: var(--pink);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(255,77,141,.2);
+  }
+  .btn-pink:hover { background: var(--pink-hover); }
+
+  /* ---------- Список постов ---------- */
+  .post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .empty {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 40px 0;
+    font-size: 0.95rem;
+  }
+
+  /* ---------- Карточка поста ---------- */
+  .post-card {
+    background: #fff;
+    border: 2px solid var(--border-blue);
+    border-radius: 14px;
+    padding: 18px 20px;
+    transition: border-color .15s;
+  }
+  .post-card:hover { border-color: var(--border-blue-dark); }
+
+  .post-text {
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--text);
+    margin-bottom: 16px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .post-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-top: 14px;
+    border-top: 1px solid #e6eefc;
+  }
+  .post-count {
+    margin-left: auto;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+
+  /* ---------- Режим редактирования ---------- */
+  .edit-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .edit-row input {
+    flex: 1;
+    min-width: 200px;
+    border: 2px solid var(--border-blue);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 1rem;
+    outline: none;
+    font-family: inherit;
+    color: var(--text);
+  }
+  .edit-row input:focus { border-color: var(--primary); }
+
+  /* ---------- Комментарии ---------- */
+  .comment-list {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed #c8d8f0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: fade .2s ease;
+  }
+  @keyframes fade {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .comment-form {
+    display: flex;
+    gap: 8px;
+  }
+  .comment-form input {
+    flex: 1;
+    border: 2px solid var(--border-blue);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    outline: none;
+    font-family: inherit;
+    color: var(--text);
+    background: #fff;
+  }
+  .comment-form input:focus { border-color: var(--primary); }
+
+  .comment-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: #f4f8ff;
+    border: 2px solid #cfe0ff;
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .comment-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    flex-shrink: 0;
+    font-size: 0.95rem;
+  }
+  .comment-body { flex: 1; min-width: 0; }
+  .comment-author {
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .comment-author span {
+    font-weight: 400;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    margin-left: 8px;
+  }
+  .comment-text {
+    font-size: 0.95rem;
+    color: #2c3a52;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+  .comment-del {
+    background: transparent;
+    border: none;
+    color: var(--pink);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  .comment-del:hover { background: #ffe6ef; }
+
+  /* ---------- Адаптив ---------- */
+  @media (max-width: 600px) {
+    body { padding: 16px 10px 40px; }
+
+    .new-post-form {
+      flex-direction: column;
+      gap: 8px;
+    }
+    .new-post-form .btn { width: 100%; }
+
+    .post-card { padding: 14px; }
+
+    .post-actions { gap: 8px; }
+    .post-actions .btn { padding: 8px 14px; font-size: 0.85rem; }
+    .post-count {
+      margin-left: 0;
+      order: 5;
+      width: 100%;
+      font-size: 0.8rem;
+    }
+
+    .comment-form { flex-direction: column; gap: 8px; }
+    .comment-form .btn { width: 100%; }
+
+    .comment-item { padding: 10px; gap: 8px; }
+    .comment-avatar { width: 34px; height: 34px; font-size: 0.85rem; }
+  }
+
+  @media (max-width: 400px) {
+    .post-actions .btn { flex: 1 1 calc(50% - 8px); }
+    .header h1 { font-size: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- Наш код через Babel (JSX в браузере) -->
+<script type="text/babel" data-type="module" data-presets="react">
+import React, { useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { Provider, useDispatch, useSelector } from 'react-redux';
+import { configureStore, createSlice, nanoid, createSelector } from '@reduxjs/toolkit';
+
+/* ============================================================
+   1. Redux Toolkit — slice с постами и комментариями
+   ============================================================ */
+
+const initialPosts = [
+  {
+    id: nanoid(),
+    text: 'Сегодня было замечательное предложение пойти поужинать этим вечером. Главное, чтобы погода была преимущественно теплой.',
+    commentsHidden: false,
+    comments: [
+      { id: nanoid(), author: 'Мария', time: '5 мин назад',
+        text: 'Отличная идея! Я только за, давайте в 19:00 у того итальянского местечка.' },
+      { id: nanoid(), author: 'Алексей', time: '3 мин назад',
+        text: 'Поддерживаю. Забронирую столик на веранде, если погода не подведёт.' },
+    ],
+  },
+  {
+    id: nanoid(),
+    text: 'Сегодня было замечательное предложение пойти поужинать этим вечером. Главное, чтобы погода была преимущественно теплой.',
+    commentsHidden: false,
+    comments: [
+      { id: nanoid(), author: 'Кристина', time: '1 мин назад',
+        text: 'Я давно хотела выбраться! Возьмите меня с собой 🙌' },
+      { id: nanoid(), author: 'Дмитрий', time: 'только что',
+        text: 'Смотрю прогноз — обещают +18 и без дождя. Идеально.' },
+    ],
+  },
+];
+
+const postsSlice = createSlice({
+  name: 'posts',
+  initialState: { items: initialPosts },
+  reducers: {
+    addPost: {
+      reducer(state, action) {
+        state.items.unshift(action.payload);
+      },
+      prepare(text) {
+        return {
+          payload: {
+            id: nanoid(),
+            text,
+            comments: [],
+            commentsHidden: false,
+          },
+        };
+      },
+    },
+    updatePost(state, action) {
+      const { id, text } = action.payload;
+      const post = state.items.find((p) => p.id === id);
+      if (post) post.text = text;
+    },
+    deletePost(state, action) {
+      state.items = state.items.filter((p) => p.id !== action.payload);
+    },
+    toggleComments(state, action) {
+      const post = state.items.find((p) => p.id === action.payload);
+      if (post) post.commentsHidden = !post.commentsHidden;
+    },
+    hideComments(state, action) {
+      const post = state.items.find((p) => p.id === action.payload);
+      if (post) post.commentsHidden = true;
+    },
+    addComment: {
+      reducer(state, action) {
+        const { postId, comment } = action.payload;
+        const post = state.items.find((p) => p.id === postId);
+        if (post) post.comments.push(comment);
+      },
+      prepare(postId, text) {
+        return {
+          payload: {
+            postId,
+            comment: {
+              id: nanoid(),
+              author: 'Вы',
+              time: 'только что',
+              text,
+            },
+          },
+        };
+      },
+    },
+    deleteComment(state, action) {
+      const { postId, commentId } = action.payload;
+      const post = state.items.find((p) => p.id === postId);
+      if (post) post.comments = post.comments.filter((c) => c.id !== commentId);
+    },
+  },
+});
+
+const {
+  addPost,
+  updatePost,
+  deletePost,
+  toggleComments,
+  hideComments,
+  addComment,
+  deleteComment,
+} = postsSlice.actions;
+
+/* Selectors */
+const selectPostsState = (state) => state.posts;
+const selectAllPosts = createSelector([selectPostsState], (p) => p.items);
+
+/* Store */
+const store = configureStore({
+  reducer: { posts: postsSlice.reducer },
+});
+
+/* ============================================================
+   2. Компоненты (презентационные)
+   ============================================================ */
+
+function Header() {
+  return (
+    <header className="header">
+      <h1>Social Book</h1>
+    </header>
+  );
+}
+
+function NewPostForm() {
+  const [text, setText] = useState('');
+  const dispatch = useDispatch();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    dispatch(addPost(trimmed));
+    setText('');
+  };
+
+  return (
+    <form className="new-post-form" onSubmit={handleSubmit}>
+      <input
+        type="text"
+        placeholder="Новый пост ..."
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        maxLength={280}
+      />
+      <button type="submit" className="btn btn-primary">
+        Добавить
+      </button>
+    </form>
+  );
+}
+
+const AVATAR_COLORS = [
+  '#3d7eff', '#ff4d8d', '#ffa62b', '#22b07d',
+  '#8e5cff', '#00b8d9', '#e85c4a', '#5c7cfa',
+];
+
+function colorFor(name = '') {
+  let sum = 0;
+  for (const ch of name) sum += ch.charCodeAt(0);
+  return AVATAR_COLORS[sum % AVATAR_COLORS.length];
+}
+
+function CommentItem({ postId, comment }) {
+  const dispatch = useDispatch();
+
+  return (
+    <div className="comment-item">
+      <div
+        className="comment-avatar"
+        style={{ background: colorFor(comment.author) }}
+      >
+        {comment.author.charAt(0).toUpperCase()}
+      </div>
+      <div className="comment-body">
+        <div className="comment-author">
+          {comment.author}
+          <span>{comment.time}</span>
+        </div>
+        <div className="comment-text">{comment.text}</div>
+      </div>
+      <button
+        className="comment-del"
+        onClick={() => dispatch(deleteComment({ postId, commentId: comment.id }))}
+      >
+        Удалить
+      </button>
+    </div>
+  );
+}
+
+function CommentList({ postId }) {
+  const dispatch = useDispatch();
+  const [text, setText] = useState('');
+  const post = useSelector(selectAllPosts).find((p) => p.id === postId);
+
+  if (!post) return null;
+
+  const handleAdd = () => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    dispatch(addComment(postId, trimmed));
+    setText('');
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') handleAdd();
+  };
+
+  return (
+    <div className="comment-list">
+      <div className="comment-form">
+        <input
+          type="text"
+          placeholder="Новый комментарий ..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={handleKeyDown}
+          maxLength={200}
+        />
+        <button className="btn btn-primary" onClick={handleAdd}>
+          Добавить
+        </button>
+      </div>
+
+      {post.comments.map((c) => (
+        <CommentItem key={c.id} postId={postId} comment={c} />
+      ))}
+
+      <button
+        className="btn btn-primary"
+        style={{ alignSelf: 'flex-start', marginTop: 4 }}
+        onClick={() => dispatch(hideComments(postId))}
+      >
+        Спрятать
+      </button>
+    </div>
+  );
+}
+
+function PostCard({ post }) {
+  const dispatch = useDispatch();
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState(post.text);
+
+  const startEdit = () => {
+    setDraft(post.text);
+    setIsEditing(true);
+  };
+
+  const saveEdit = () => {
+    const trimmed = draft.trim();
+    if (trimmed) dispatch(updatePost({ id: post.id, text: trimmed }));
+    setIsEditing(false);
+  };
+
+  return (
+    <article className="post-card">
+      {isEditing ? (
+        <div className="edit-row">
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            maxLength={280}
+            autoFocus
+          />
+          <button className="btn btn-primary" onClick={saveEdit}>
+            Подтвердить
+          </button>
+          <button className="btn btn-pink" onClick={() => setIsEditing(false)}>
+            Закрыть
+          </button>
+        </div>
+      ) : (
+        <p className="post-text">{post.text}</p>
+      )}
+
+      <div className="post-actions">
+        <button
+          className="btn btn-primary"
+          onClick={() => dispatch(toggleComments(post.id))}
+        >
+          Комментарии
+        </button>
+        <span className="post-count">
+          Количество комментариев - {post.comments.length}
+        </span>
+        <button className="btn btn-ghost" onClick={startEdit}>
+          Изменить
+        </button>
+        <button
+          className="btn btn-pink"
+          onClick={() => dispatch(deletePost(post.id))}
+        >
+          Удалить
+        </button>
+      </div>
+
+      {!post.commentsHidden && <CommentList postId={post.id} />}
+    </article>
+  );
+}
+
+function PostList() {
+  const posts = useSelector(selectAllPosts);
+
+  if (!posts.length) {
+    return <p className="empty">Пока нет ни одного поста.</p>;
+  }
+
+  return (
+    <section className="post-list">
+      {posts.map((post) => (
+        <PostCard key={post.id} post={post} />
+      ))}
+    </section>
+  );
+}
+
+function App() {
+  return (
+    <div className="app">
+      <Header />
+      <NewPostForm />
+      <PostList />
+    </div>
+  );
+}
+
+/* ============================================================
+   3. Рендер
+   ============================================================ */
+
+const root = createRoot(document.getElementById('root'));
+root.render(
+  <Provider store={store}>
+    <App />
+  </Provider>
+);
+</script>
+
+</body>
+</html>
